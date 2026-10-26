@@ -9,10 +9,11 @@ Routes use path segments and dedicated page components. The client router resolv
 | `/` | Homepage | Implemented; independent concept notice is visible |
 | `/buy` | Demonstration inventory with collapsible search and filters | All sample listings display by default; search filters are hidden until opened and run in the browser |
 | `/buy/:vehicleSlug` | Vehicle detail and next-step selection | Implemented for the three sample vehicles |
+| `/buy/:vehicleSlug/checkout` | Fictional-data Buy test checkout | Server-side test order and payment simulation are implemented; form stays disabled until a dedicated Supabase test project, schema, and server flags are configured |
 | `/buy/:vehicleSlug/enquiry` | Purchase enquiry | Explicitly closed; no customer details are accepted |
 | `/buy/:vehicleSlug/inspection` | Inspection booking | Explicitly closed; no appointments are accepted |
-| `/buy/requests/:requestId/confirmation` | Request confirmation | Direct route explains that no request was submitted |
-| `/buy/requests/:requestId/track` | Purchase/inspection status | Direct route explains that tracking is not active |
+| `/buy/requests/:requestId/confirmation` | Test-order confirmation | Loads only from a private test link after a record is saved; simulation never calls a payment provider |
+| `/buy/requests/:requestId/track` | Test-order status | Requires the private access key in the URL fragment; displays no customer details |
 | `/order` | Manufacturer, model, year, condition, specifications, budget, destination | Interactive validated preview; values remain in page memory only |
 | `/order/review` | Review vehicle sourcing preview | Review works in the current tab; direct refresh has no draft; no submission |
 | `/order/requests/:requestId/confirmation` | Sourcing request confirmation | Route explains that no request record exists |
@@ -73,14 +74,16 @@ src/
       services/             # Dedicated Order/Sell/Swap/Import components and shared preview flow
       unavailable.js        # Explicit status for unavailable routes
   data/sample-vehicles.js   # Clearly marked demonstration-only listings
-api/                         # Approved Vercel server endpoints, later phase
-supabase/migrations/         # Ordered SQL migrations, later phase
+api/                         # Vercel Functions entrypoints
+src/server/                  # Server-only Buy test-order service
+supabase/schema-drafts/      # Reviewed drafts awaiting a selected Supabase test project
+supabase/migrations/         # Versioned migrations (none applied yet)
 tests/
 ```
 
 ## Access boundary
 
-Public inventory reads use only a Supabase publishable key after RLS is enabled and reviewed. Service-role/secret keys remain in server-side functions. Customer submission endpoints must validate input, rate-limit requests, and enforce ownership/role checks on the server and in RLS. Administrative permissions must not use user-editable metadata. See [Supabase secure data guidance](https://supabase.com/docs/guides/database/secure-data), [RLS guidance](https://supabase.com/docs/guides/database/postgres/row-level-security), and [Auth guidance](https://supabase.com/docs/guides/auth).
+The Buy test endpoint uses a Supabase secret key only in server runtime configuration; the browser never receives it. RLS is enabled on the test table and direct `anon`/`authenticated` access is revoked. The endpoint checks same-origin requests, limits body size, validates fields and a fictional-data acknowledgement, uses a honeypot, and returns an opaque private tracking key whose hash is stored. This test-only control set is not approval for live customer collection. Real customer workflows require an approved privacy notice, retention policy, durable abuse controls, and company authorization. See [Supabase secure data guidance](https://supabase.com/docs/guides/database/secure-data), [RLS guidance](https://supabase.com/docs/guides/database/postgres/row-level-security), and [Auth guidance](https://supabase.com/docs/guides/auth).
 
 ## Vehicle selector scope
 

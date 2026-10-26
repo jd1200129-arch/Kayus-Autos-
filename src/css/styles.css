@@ -466,3 +466,54 @@ main h1[tabindex="-1"]:focus { outline: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+
+/* Mobile layout: keep the route loader and navigation within the viewport. */
+.route-loader { min-height: 100svh; padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
+.route-loader__brand { max-width: 100%; justify-content: center; }
+.route-loader__wordmark { min-width: 0; }
+.route-loader__scene { width: min(270px, 100%); }
+.route-loader__car { display: block; width: min(220px, 100%); height: auto; }
+.route-loader__notice { color: rgba(245, 243, 237, .62); font-size: 9px; letter-spacing: .02em; }
+@media (max-width: 899px) {
+  .primary-navigation { inset: 72px 0 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-bottom: max(40px, env(safe-area-inset-bottom)); transform: translateY(-8px); opacity: 0; pointer-events: none; transition: transform .2s ease, opacity .2s ease, visibility .2s ease; }
+  .primary-navigation.is-open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+}
+@media (max-width: 599px) {
+  .route-loader__content { width: min(100%, 280px); }
+  .route-loader__mark { width: 36px; height: 36px; flex: 0 0 36px; }
+  .route-loader__mark svg { width: 27px; height: 27px; }
+  .route-loader__wordmark { font-size: 19px; letter-spacing: .1em; }
+  .route-loader__wordmark span { font-size: 8px; letter-spacing: .38em; }
+  .route-loader__scene { width: min(230px, 100%); height: 84px; margin-top: 25px; }
+  .route-loader__car { width: min(190px, 84%); }
+  .route-loader__scene::before { bottom: 11px; height: 35px; }
+  .route-loader__road { bottom: 11px; }
+  .route-loader__road-light { bottom: 10px; }
+  .route-loader__message { max-width: 230px; margin-top: 12px; font-size: 15px; }
+  .route-loader__progress { width: 128px; margin-top: 19px; }
+  .route-loader__notice { max-width: 270px; margin-top: 18px; }
+  .primary-navigation { inset: 66px 0 0; }
+  .primary-navigation > a { padding: 16px 0; font-size: 21px; }
+  .page-hero__inner { min-height: 0; padding-top: 48px; padding-bottom: 48px; }
+  .page-hero h1 { font-size: clamp(39px, 10.8vw, 52px); }
+  .hero__copy { min-height: 0; padding: 49px 7% 44px; }
+  .hero h1 { font-size: clamp(41px, 11.6vw, 58px); }
+  .hero__visual { min-height: 225px; }
+  .collection { padding-top: 60px; padding-bottom: 66px; }
+  .section-heading h2, .service-band h2, .statement h2, .contact-cta h2 { font-size: clamp(36px, 9.8vw, 50px); }
+  .service-band { padding: 62px 0; }
+  .contact-cta__inner { min-height: 0; }
+}
+@media (max-width: 380px) {
+  .wordmark__type { font-size: 14px; }
+  .wordmark__type span { font-size: 7px; }
+  .hero__copy { padding-top: 42px; padding-bottom: 38px; }
+  .hero__actions { align-items: stretch; flex-direction: column; gap: 13px; }
+  .hero__actions .button { width: 100%; }
+  .hero__note { margin-top: 22px; }
+  .hero__visual { min-height: 200px; }
+  .filter-grid { grid-template-columns: 1fr; }
+  .filter-field--search { grid-column: auto; }
+  .footer-links { gap: 14px; }
+}

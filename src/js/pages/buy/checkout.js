@@ -26,7 +26,7 @@ export function render(route) {
             <p class="checkout-intro">Use fictional contact details only. There are no card fields, and this test does not take payment.</p>
             <div class="checkout-status" id="checkout-setup-status" role="status" aria-live="polite">Checking the test-order service…</div>
             <form id="purchase-checkout-form">
-              <fieldset class="checkout-fieldset" id="purchase-checkout-fields" disabled>
+              <fieldset class="checkout-fieldset" id="purchase-checkout-fields">
                 <legend class="visually-hidden">Fictional customer details for the test order</legend>
                 <div class="checkout-fields">
                   <label class="checkout-field" for="customer-name"><span>Full name <span aria-hidden="true">*</span></span><input id="customer-name" name="name" type="text" autocomplete="name" minlength="2" maxlength="80" required /></label>
@@ -70,19 +70,19 @@ export function render(route) {
           });
           const result = await response.json();
           ready = response.ok && result.ready === true;
-          fieldset.disabled = !ready;
+          fieldset.disabled = false;
           button.disabled = !ready;
           if (ready) {
             status.textContent = "Test storage is ready. Fictional details will be saved to the connected test database only.";
             button.innerHTML = 'Create test order <span aria-hidden="true">↗</span>';
           } else {
-            status.textContent = "Test checkout is not enabled. A dedicated Supabase test database and server-side test settings are required; no details have been sent.";
+            status.textContent = "You can fill these fields with fictional details, but test submission is unavailable until a dedicated Supabase test database and server-side settings are configured. Nothing you type here is sent or saved.";
             button.textContent = "Test checkout unavailable";
           }
         } catch {
           if (controller.signal.aborted) return;
           ready = false;
-          fieldset.disabled = true;
+          fieldset.disabled = false;
           button.disabled = true;
           button.textContent = "Test checkout unavailable";
           status.textContent = "We could not check the test-order service. No details have been sent. Refresh to try again.";
@@ -92,7 +92,12 @@ export function render(route) {
       async function submit(event) {
         event.preventDefault();
         error.hidden = true;
-        if (!ready || !form.reportValidity()) return;
+        if (!ready) {
+          error.textContent = "Test submission is unavailable, so nothing was sent or saved. Please try again after the test database is configured.";
+          error.hidden = false;
+          return;
+        }
+        if (!form.reportValidity()) return;
         const data = new FormData(form);
         button.disabled = true;
         button.textContent = "Saving test order…";

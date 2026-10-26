@@ -36,6 +36,7 @@ const pageLoaders = {
   about: () => import("./pages/about.js"),
   "buy-inventory": () => import("./pages/buy/inventory.js"),
   "buy-vehicle": () => import("./pages/buy/vehicle-detail.js"),
+  "buy-checkout": () => import("./pages/buy/checkout.js"),
   "buy-request-gate": () => import("./pages/buy/request-gate.js"),
   "buy-request-state": () => import("./pages/buy/request-state.js"),
   "service-order": () => import("./pages/services/order.js"),

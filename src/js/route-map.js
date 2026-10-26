@@ -69,6 +69,11 @@ export function resolveRoute(input) {
     return { type: "buy-request-state", path, params: { requestId: requestState[1], state: requestState[2] }, searchParams: url.searchParams };
   }
 
+  const buyCheckout = path.match(/^\/buy\/([^/]+)\/checkout$/);
+  if (buyCheckout && slugPattern.test(buyCheckout[1])) {
+    return { type: "buy-checkout", path, params: { vehicleSlug: buyCheckout[1] }, searchParams: url.searchParams };
+  }
+
   const buyAction = path.match(/^\/buy\/([^/]+)\/(enquiry|inspection)$/);
   if (buyAction && slugPattern.test(buyAction[1])) {
     return { type: "buy-request-gate", path, params: { vehicleSlug: buyAction[1], action: buyAction[2] }, searchParams: url.searchParams };

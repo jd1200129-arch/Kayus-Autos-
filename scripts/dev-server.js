@@ -1,7 +1,9 @@
 import { createReadStream, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, resolve, sep } from "node:path";
+import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
+import { handlePurchaseOrders } from "../src/server/purchase-orders.js";
 
 const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
 const port = Number(process.env.PORT || 4173);
@@ -34,14 +36,45 @@ function resolveRequestPath(pathname) {
   return candidate;
 }
 
-function serve(request, response) {
+async function serve(request, response) {
+  const protocol = request.headers["x-forwarded-proto"] || "http";
+  const requestUrl = new URL(request.url || "/", `${protocol}://${request.headers.host || `${host}:${port}`}`);
+
+  if (requestUrl.pathname === "/api/purchase-orders") {
+    if (request.method !== "GET" && request.method !== "POST") {
+      response.writeHead(405, { Allow: "GET, POST" }).end();
+      return;
+    }
+    try {
+      const hasBody = request.method !== "GET" && request.method !== "HEAD";
+      const headers = new Headers();
+      for (const name of ["content-type", "content-length", "origin"]) {
+        const value = request.headers[name];
+        if (typeof value === "string") headers.set(name, value);
+      }
+      const apiRequest = new Request(requestUrl, {
+        method: request.method,
+        headers,
+        ...(hasBody ? { body: Readable.toWeb(request), duplex: "half" } : {}),
+      });
+      const apiResponse = await handlePurchaseOrders(apiRequest);
+      const body = Buffer.from(await apiResponse.arrayBuffer());
+      response.writeHead(apiResponse.status, Object.fromEntries(apiResponse.headers));
+      response.end(body);
+    } catch (error) {
+      process.stderr.write(`Local test-order API error: ${error instanceof Error ? error.message : "Unknown error"}\n`);
+      response.writeHead(500, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+      response.end(JSON.stringify({ error: "The test-order service is unavailable." }));
+    }
+    return;
+  }
+
   if (request.method !== "GET" && request.method !== "HEAD") {
     response.writeHead(405, { Allow: "GET, HEAD" }).end();
     return;
   }
 
-  const url = new URL(request.url || "/", `http://${host}:${port}`);
-  let filePath = resolveRequestPath(url.pathname);
+  let filePath = resolveRequestPath(requestUrl.pathname);
   if (!filePath) {
     response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" }).end("Bad request");
     return;
@@ -51,7 +84,7 @@ function serve(request, response) {
     if (statSync(filePath).isDirectory()) filePath = resolve(filePath, "index.html");
     statSync(filePath);
   } catch {
-    if (extname(url.pathname)) {
+    if (extname(requestUrl.pathname)) {
       response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" }).end("Not found");
       return;
     }
